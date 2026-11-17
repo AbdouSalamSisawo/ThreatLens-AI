@@ -166,8 +166,10 @@ export function ModelPerformancePage() {
               </dl>
               <p className="mt-3 text-xs text-text-dim">
                 Split: {String((info?.training_config as Record<string, unknown> | undefined)?.split ?? "60/20/20 stratified")} ·
-                train {metrics.split_sizes.train} / validation {metrics.split_sizes.validation} / test{" "}
-                {metrics.split_sizes.test} (fixed seed {String((info?.training_config as Record<string, unknown> | undefined)?.random_seed ?? "42")})
+                {metrics.split_sizes.cv_folds
+                  ? `development ${metrics.split_sizes.train} (${metrics.split_sizes.cv_folds}-fold grouped CV) / test ${metrics.split_sizes.test}`
+                  : `train ${metrics.split_sizes.train} / validation ${metrics.split_sizes.validation} / test ${metrics.split_sizes.test}`}{" "}
+                (fixed seed {String((info?.training_config as Record<string, unknown> | undefined)?.random_seed ?? "42")})
               </p>
             </div>
 
@@ -227,7 +229,7 @@ export function ModelPerformancePage() {
                     </div>
 
                     <div className="panel p-5">
-                      <h2 className="text-sm font-semibold text-text">Candidate comparison (validation set)</h2>
+                      <h2 className="text-sm font-semibold text-text">Candidate comparison (cross-validated on the development set)</h2>
                       <table className="mt-4 w-full text-left text-xs">
                         <thead>
                           <tr className="text-text-faint">

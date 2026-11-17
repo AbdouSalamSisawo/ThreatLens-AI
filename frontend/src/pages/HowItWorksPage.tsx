@@ -33,7 +33,7 @@ const STEPS = [
   {
     icon: BrainCircuit,
     title: "4 · Model inference",
-    body: "The feature vector is fed to the trained scikit-learn Random Forest, which outputs an estimated probability for the phishing class. The model is loaded once at server start from trusted artefacts produced by the documented training pipeline. If artefacts are missing or incompatible, the API reports an explicit error — it never substitutes guesses.",
+    body: "The feature vector is fed to the trained scikit-learn tree-ensemble classifier, which outputs an estimated probability for the phishing class. The model is loaded once at server start from trusted artefacts produced by the project's research notebook. If artefacts are missing or incompatible, the API reports an explicit error — it never substitutes guesses.",
   },
   {
     icon: Lightbulb,
@@ -161,23 +161,26 @@ export function HowItWorksPage() {
               scanner cannot compute.
             </li>
             <li>
-              <strong className="text-text">Split.</strong> A stratified 60/20/20
-              train/validation/test split with a fixed random seed. The test set
-              was used exactly once for the final numbers.
+              <strong className="text-text">Split.</strong> 20% of the URLs were
+              held out as a test set with no website domain in common with the
+              training data, because a scanner mostly meets domains it has never
+              seen. Random splits would let the model memorise domains and
+              overstate its accuracy. The test set was used exactly once.
             </li>
             <li>
-              <strong className="text-text">Comparison.</strong> Logistic
-              Regression, Random Forest and Hist Gradient Boosting were trained
-              and compared on the validation set (PR-AUC primary); a
-              documented tie-break favours the more explainable model when
-              quality is within 0.01. A majority-class baseline shows the value
-              added beyond a naïve predictor.
+              <strong className="text-text">Comparison.</strong> Eight learning
+              methods and two simple baselines were compared with domain-grouped
+              cross-validation (PR-AUC primary); the strongest were tuned and
+              tested for statistically significant differences. Only models whose
+              every prediction can be explained exactly were eligible for
+              deployment.
             </li>
             <li>
               <strong className="text-text">Evaluation.</strong> The selected
               model reports accuracy, precision, recall, F1, ROC-AUC, PR-AUC and
-              a confusion matrix — plus stricter domain-grouped and out-of-source
-              checks that expose how far the headline numbers can be trusted.
+              a confusion matrix with confidence intervals — plus out-of-source
+              checks on fresh phishing feeds and popular legitimate sites that
+              expose how far the headline numbers can be trusted.
             </li>
             <li>
               <strong className="text-text">What metrics mean.</strong> Precision

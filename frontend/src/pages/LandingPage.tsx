@@ -90,13 +90,13 @@ const PIPELINE = [
   { step: 1, title: "Submit a URL", desc: "You paste a link into the scanner." },
   { step: 2, title: "Validate & parse", desc: "The backend re-validates the input and parses its structure. The site is never visited." },
   { step: 3, title: "Extract features", desc: "33 lexical characteristics — lengths, tokens, encoding, hostname structure — are computed locally." },
-  { step: 4, title: "Run the model", desc: "A trained Random Forest classifies the feature vector and outputs an estimated probability." },
+  { step: 4, title: "Run the model", desc: "A trained tree-ensemble classifier scores the feature vector and outputs an estimated probability." },
   { step: 5, title: "Explain the result", desc: "Exact per-feature contributions and observed signals show why the decision was made." },
   { step: 6, title: "Guide the response", desc: "Proportionate safety recommendations follow the evidence — never “open the link to check”." },
 ];
 
 const FEATURES = [
-  { icon: ScanSearch, title: "ML-based URL classification", desc: "A Random Forest trained on 11,000+ labelled URLs from a public research corpus scores every submission." },
+  { icon: ScanSearch, title: "ML-based URL classification", desc: "A tree-ensemble model trained on 11,000+ labelled URLs from a public research corpus scores every submission." },
   { icon: Eye, title: "Explainable indicators", desc: "Observed characteristics and exact feature contributions — no black box, no invented evidence." },
   { icon: BarChart3, title: "Model performance transparency", desc: "Real held-out evaluation metrics, confusion matrix, and honest generalisation checks are published, not promised." },
   { icon: Lock, title: "Privacy-conscious processing", desc: "URL strings are analysed locally. The destination website is never contacted, and history retention is configurable." },

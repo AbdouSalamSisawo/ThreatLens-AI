@@ -55,12 +55,12 @@ export function AboutPage() {
         <section className="panel p-5 sm:p-6">
           <h2 className="text-base font-semibold text-text">Technical approach &amp; the role of explainable ML</h2>
           <p className="mt-3 text-sm leading-relaxed text-text-dim">
-            The system pairs a supervised classifier (Random Forest over 33
+            The system pairs a supervised classifier (a tree ensemble over 33
             lexical URL features) with an explanation layer that decomposes
             every prediction into exact per-feature contributions and
             human-readable observations. Explainability is not a bolt-on: it
-            shapes the model selection policy (a documented tie-break favours
-            the more interpretable model when quality is comparable), the result
+            shapes the model selection policy (only models whose every prediction
+            can be explained exactly are eligible for deployment), the result
             interface, and the safety guidance, which is derived from evidence
             rather than from the verdict alone. The campus cyber-safety impact
             is intended to be double: better decisions about individual links,
@@ -114,7 +114,7 @@ export function AboutPage() {
             <div>
               <dt className="font-medium uppercase tracking-wider text-text-faint">Machine learning</dt>
               <dd className="mt-1 leading-relaxed text-text-dim">
-                Random Forest (selected), Logistic Regression &amp; Hist Gradient Boosting (compared), exact tree-path explanations, versioned feature schema
+                Tree-ensemble classifier selected from eight learners under domain-grouped cross-validation, exact tree-path explanations, versioned feature schema
               </dd>
             </div>
             <div>

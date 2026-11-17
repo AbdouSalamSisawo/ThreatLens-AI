@@ -44,7 +44,7 @@ export function SecurityPrivacyPage() {
             Only the URL <strong className="text-text">string itself</strong>.
             The backend parses the text you submit and computes 33 lexical
             features from it — lengths, character counts, hostname structure,
-            encoding, tokens. A trained Random Forest then classifies those
+            encoding, tokens. A trained tree-ensemble model then classifies those
             features. No page content, no screenshots, no redirects are
             resolved, no cookies or credentials are collected, and no browser
             profile is touched.

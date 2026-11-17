@@ -9,7 +9,7 @@ Separates explanation into four layers (per the project design):
      the selected model:
        * Logistic Regression: contribution_j = coef_j * z_j  (log-odds space,
          where z_j is the standardised feature value). Bias = intercept.
-       * Random Forest: exact decision-path decomposition per tree
+       * Tree ensembles (Random Forest, Extra Trees): exact decision-path decomposition per tree
          (treeinterpreter method). For each tree, predict_proba telescopes:
          P(leaf) = P(root) + sum over path of (P(child) - P(node)), and each
          delta is attributed to the split feature. Averaging over trees
@@ -72,7 +72,9 @@ def contributions_for_forest(
     pipeline: Any, x: np.ndarray
 ) -> tuple[float, dict[str, float]] | None:
     """
-    Exact probability-space decomposition for a RandomForestClassifier.
+    Exact probability-space decomposition for a bagged tree ensemble
+    (RandomForestClassifier or ExtraTreesClassifier: both average per-tree leaf
+    class proportions, so the per-tree path decomposition is exact for both).
 
     Handles the bare-estimator case and Pipeline-wrapped forests. When a
     pipeline is supplied, all preceding preprocessing steps are applied to
@@ -158,7 +160,7 @@ def compute_model_evidence(pipeline: Any, features: dict[str, float]) -> dict:
         return {
             "method": "tree_path",
             "method_description": (
-                "Exact decision-path decomposition of the Random Forest "
+                "Exact decision-path decomposition of the tree ensemble "
                 "(treeinterpreter method): each tree's probability change "
                 "along the path taken by this URL is attributed to the "
                 "feature that caused the split, averaged over all trees."

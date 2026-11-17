@@ -119,7 +119,7 @@ export interface TestMetrics {
 }
 
 export interface FullMetrics extends ModelInfo {
-  split_sizes: { train: number; validation: number; test: number };
+  split_sizes: { train: number; validation: number; test: number; cv_folds?: number; scheme?: string };
   validation_comparison: Record<
     string,
     {
