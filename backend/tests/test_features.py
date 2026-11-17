@@ -120,6 +120,20 @@ class TestFeatures:
             == 0
         )
 
+    def test_registrable_domain_ignores_deep_subdomains(self):
+        # Regression (schema 1.1.0): deep subdomains under a two-part suffix
+        # must not leak into the registrable domain.
+        assert parse_url("https://a.b.example.co.uk/x").registrable_domain == "example.co.uk"
+        assert parse_url("https://example.co.uk/").registrable_domain == "example.co.uk"
+        assert parse_url("https://a.b.example.com/").registrable_domain == "example.com"
+        # ...otherwise a brand in a subdomain would hide the impersonation.
+        assert (
+            extract_features("http://login.paypal-verify.secure.co.uk/")[
+                "has_brand_token_outside_domain"
+            ]
+            == 1
+        )
+
     def test_non_standard_port(self):
         assert extract_features("http://example.com:8080/")["has_non_standard_port"] == 1
         assert extract_features("https://example.com:443/")["has_non_standard_port"] == 0

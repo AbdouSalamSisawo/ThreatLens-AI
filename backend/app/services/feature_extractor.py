@@ -36,7 +36,7 @@ from collections import Counter
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-FEATURE_SCHEMA_VERSION = "1.0.0"
+FEATURE_SCHEMA_VERSION = "1.1.0"  # 1.1.0: registrable-domain fix for deep subdomains under two-part suffixes
 
 # ---------------------------------------------------------------------------
 # Documented reference lists (transparent, generic, manually curated)
@@ -139,16 +139,18 @@ def _registrable_domain_of(hostname: str) -> str:
     used to keep the prototype dependency-free; the approximation is only
     used for the brand-impersonation heuristic and grouping heuristics.
     """
-    parts = hostname.rsplit(".", 2)
+    parts = [p for p in hostname.split(".") if p]
     two_part_suffixes = {
         "co.uk", "org.uk", "ac.uk", "gov.uk", "com.my", "edu.my", "gov.my",
         "com.au", "co.nz", "co.jp", "co.kr", "com.sg", "com.br", "co.in",
         "com.tr", "com.mx", "co.za", "com.hk", "com.tw",
     }
-    if len(parts) == 3 and f"{parts[1]}.{parts[2]}" in two_part_suffixes:
-        return f"{parts[0]}.{parts[1]}.{parts[2]}"
+    # Keep exactly one label in front of the (possibly two-label) suffix, so
+    # deeper subdomains never leak into the registrable domain.
+    if len(parts) >= 3 and f"{parts[-2]}.{parts[-1]}" in two_part_suffixes:
+        return ".".join(parts[-3:])
     if len(parts) >= 2:
-        return f"{parts[-2]}.{parts[-1]}"
+        return ".".join(parts[-2:])
     return hostname
 
 
