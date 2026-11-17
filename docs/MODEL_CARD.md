@@ -1,94 +1,102 @@
 # Model Card — ThreatLens Phishing URL Classifier
 
-> **Reference model.** The figures below describe the reference model (v1.0.0) produced during development. Model artefacts are no longer committed to the repository — when you supply your own model (see [MODEL_DROPIN.md](MODEL_DROPIN.md)), regenerate these figures from its `metrics.json`; the in-app *Model Performance* page always reads the live artefacts.
-
 | | |
 |---|---|
 | **Model ID** | `threatlens-phishing-url-classifier` |
-| **Version** | 1.0.0 |
-| **Trained** | 2026-10-29 (UTC timestamp in `backend/artifacts/model_metadata.json`) |
-| **Framework** | scikit-learn 1.5.2 (RandomForestClassifier) |
+| **Version** | 2.0.0 (UTC training timestamp in `backend/artifacts/model_metadata.json`) |
+| **Model** | Extra Trees (`ExtraTreesClassifier`: 200 trees, `max_features="log2"`, `min_samples_leaf=2`, unlimited depth) |
+| **Framework** | scikit-learn 1.6.1 (pinned in `backend/` and `ml/` requirements) |
+| **Feature schema** | 1.1.0 — 33 lexical features |
+| **Produced by** | [`ml/notebooks/threatlens_phishing_url_detection.ipynb`](../ml/notebooks/threatlens_phishing_url_detection.ipynb) |
 | **Artefacts** | `backend/artifacts/phishing_model.joblib`, `model_metadata.json`, `metrics.json`, `feature_schema.json` |
+
+All figures below come from the notebook. Its tables are in `ml/reports/tables/` and its figures in `ml/reports/figures/`.
 
 ## 1. Purpose
 
-Estimate the likelihood that a URL string matches phishing patterns seen in the training corpus, and support an explainable screening workflow. The model is one input to a human decision — never an automated block/allow mechanism.
+Estimate how closely a URL string matches the phishing patterns in the training corpus, as one input to an explainable screening workflow. It is an aid to a human decision, never an automated block/allow mechanism.
 
-## 2. Intended users
+## 2. Intended users and prohibited uses
 
-Campus awareness demos, security-education contexts, and the ThreatLens web prototype's users (students, staff, non-technical users). **Prohibited uses:** automated blocking/gatekeeping of network traffic; legal or compliance decisions; claiming a URL is confirmed malicious or confirmed safe; scanning URLs on behalf of third parties at scale.
+Campus awareness demos, security education, and users of the ThreatLens web application (students, staff, non-technical users).
+
+**Prohibited:** automated blocking or gatekeeping of network traffic; legal or compliance decisions; declaring a URL confirmed malicious or confirmed safe; scanning URLs on behalf of third parties at scale.
 
 ## 3. Training data
 
-- Public "TabNetone" corpus (`pirocheto/phishing-url`, CC-BY-4.0, arXiv:2010.12847), retrieved 2026-10-29.
-- 11,430 raw records loaded → 11,203 retained after validation, label-conflict checks and de-duplication (227 duplicates removed; 0 conflicts; 0 invalid).
-- Labels: 5,488 phishing (1) / 5,715 legitimate (0).
-- Only raw `url` + `status` used; all 87 pre-computed dataset features discarded (the model uses ThreatLens' own 33-feature schema).
+- Hannousse & Yahiouche phishing-URL corpus ([arXiv:2010.12847](https://arxiv.org/abs/2010.12847), *Engineering Applications of Artificial Intelligence* 104, 2021), redistributed as `pirocheto/phishing-url` on Hugging Face, CC-BY-4.0. The snapshot was retrieved on 2026-10-29 and is checksum-verified (`ml/data/README.md`).
+- 11,430 records loaded; 11,203 kept after removing 227 canonical duplicates. No records had invalid labels, unparsable URLs or label conflicts.
+- 5,488 phishing / 5,715 legitimate, from 2,599 and 3,903 registrable domains respectively.
+- Only the raw `url` and `status` fields are used. The dataset's 87 pre-computed features are discarded, because the API can only compute features from the URL.
 
-## 4. Feature engineering
+## 4. Features
 
-33 lexical features extracted by the shared, versioned module (`app/services/feature_extractor.py`, schema v1.0.0), grouped as:
+33 lexical features from the shared module `backend/app/services/feature_extractor.py`, the same code used at inference. The notebook groups them into five families: **length**, **character composition**, **host structure**, **scheme/path/query**, and **curated lexicons** (shorteners, high-abuse TLDs, urgency tokens, brand impersonation). The lexicon lists are documented in the module.
 
-- **Lengths/counts:** URL, hostname, path, query lengths; dots, hyphens, underscores, digits, percent-encodings, query params, ampersands, '@', path depth, double-slash-in-path.
-- **Ratios:** digit ratios (URL, hostname).
-- **Structure flags:** IP-address hostname (IPv4/IPv6), non-standard port, HTTPS scheme (as submitted), user:password@ credentials, shortener domain, punycode labels, high-abuse TLD, executable extension in path, long hostname (≥30 chars), long hexadecimal hostname labels.
-- **Content signals:** count of generic security/urgency tokens (documented list), brand token outside the registrable domain (impersonation heuristic), Shannon entropy of hostname.
+Schema 1.1.0 fixed the registrable-domain helper for deep subdomains under two-part suffixes (for example `*.co.uk`). Before the fix, brand impersonation on such hosts went undetected.
 
-All lists are documented in the module. Features are signals for the model — individually they never decide an outcome.
+## 5. Methodology
 
-## 5. Training methodology
+1. **Domain-disjoint hold-out.** 20% of URLs (2,110) form a test set that shares no registrable domain with the development set (`StratifiedGroupKFold`, seed 42).
+2. **Comparison.** Eight learners plus a majority baseline and a hand-written red-flag rule, compared under 5-fold domain-grouped CV on the development set. PR-AUC is the primary metric.
+3. **Tuning.** Randomised search for logistic regression, random forest, extra trees and histogram gradient boosting, on the same grouped folds.
+4. **Statistics.** 3 × 5 repeated grouped CV with Nadeau–Bengio corrected resampled *t*-tests.
+5. **Selection rule** (fixed before tuning). Only models with exact per-URL explanations are eligible (logistic regression, random forest, extra trees). Pick the highest PR-AUC; prefer logistic regression only if it is within 0.01 and not significantly worse.
+6. **Single test evaluation**, with 95% CIs from a domain-cluster bootstrap (2,000 replicates).
+7. **Deployment fit.** The same configuration is refit on all 11,203 URLs.
 
-1. Stratified 60/20/20 train/validation/test split, fixed seed 42 (train 6,721 / val 2,241 / test 2,241).
-2. Candidates trained on the train split: Logistic Regression (StandardScaler pipeline), Random Forest (300 trees, min_samples_leaf=2), Hist Gradient Boosting (300 iters, lr=0.1), majority-class baseline.
-3. Compared on **validation** PR-AUC (primary), F1, accuracy.
-4. **Selection rule:** highest validation PR-AUC; if Logistic Regression is within 0.01 PR-AUC of the best, prefer Logistic Regression for exact per-instance coefficient explanations. Result: Random Forest won by margin (0.9472 vs 0.9153), so Random Forest was selected.
-5. Selected model refit on train+validation; **single** evaluation on the held-out test set.
-6. Class imbalance: none required (≈balanced); documented.
+## 6. Results
 
-## 6. Evaluation methodology & actual metrics
+**Model selection (repeated grouped CV, PR-AUC):** gradient boosting 0.918 · **Extra Trees 0.909 (selected)** · Random Forest 0.908 · logistic regression 0.883. Gradient boosting's lead over Extra Trees (0.009) is not significant (*p* = 0.09), so the cost of requiring exact explanations is negligible. Extra Trees and Random Forest are statistically tied.
 
-**Held-out test set (used once):**
+**Held-out test set: 2,110 URLs from unseen domains, threshold 0.5**
 
-| Metric | Value |
-|---|---|
-| Accuracy | 0.8626 |
-| Precision | 0.8903 |
-| Recall | 0.8206 |
-| F1 | 0.8540 |
-| ROC-AUC | 0.9395 |
-| PR-AUC | 0.9423 |
-| Confusion matrix | TN 1032 · FP 111 · FN 197 · TP 901 |
+| Metric | Value | 95% CI |
+|---|---|---|
+| PR-AUC | 0.928 | 0.901–0.949 |
+| ROC-AUC | 0.931 | 0.910–0.948 |
+| Accuracy | 0.857 | 0.823–0.887 |
+| Precision | 0.894 | 0.857–0.923 |
+| Recall | 0.771 | 0.719–0.816 |
+| Specificity | 0.926 | 0.897–0.948 |
+| F1 | 0.828 | 0.789–0.861 |
+| MCC | 0.712 | 0.651–0.765 |
+| Confusion matrix | TN 1,083 · FP 86 · FN 216 · TP 725 | |
 
-**Why both error types matter:** false negatives (197) leave users exposed — a false sense of safety; false positives (111) harm legitimate sites and erode trust in the tool. Both are published and neither is tuned away silently.
-
-**Stricter honesty checks:**
+**Generalisation checks**
 
 | Check | Result | Interpretation |
 |---|---|---|
-| Domain-grouped split (no registrable domain crosses train/holdout) | acc 0.8248, recall 0.7529, PR-AUC 0.8984 | Drop vs random split shows some domain memorisation in the random-split numbers |
-| OpenPhish feed, 300 fresh URLs (out-of-time, out-of-source) | 238 flagged → 0.7933 recall proxy | Fresh phishing is caught somewhat less often than the corpus test suggests |
-| Majestic top-1,000 domains (constructed HTTPS home-page URLs) | 23 flagged → 0.023 FPR | Popular legitimate sites are rarely flagged |
+| Random 5-fold split instead of domain-grouped | PR-AUC +0.040 | Random splits overstate performance through domain memorisation |
+| Dataset's official train/test split | PR-AUC +0.037; 49% of its test URLs share a domain with training | The official split leaks domains too |
+| OpenPhish feed, 300 URLs not in the corpus | 78.7% flagged (deployed model) | Recall carries over to a later, independent feed |
+| Majestic top 1,000 domains (`https://<domain>`) | 3.1% flagged (deployed model) | Mostly URL shorteners and Outlook login hosts |
 
 ## 7. Output semantics
 
-- `predict_proba` → **estimated model probability** for the phishing class. **Uncalibrated** — not a measured risk of criminality.
-- Classification bands (documented): `likely_benign` < 0.50 · `suspicious` 0.50–0.80 · `high_risk` ≥ 0.80 · uncertainty flag 0.35–0.65.
-- Risk score = round(probability × 100), a UI representation of the model output — explicitly not the probability of actual malicious activity.
+- `predict_proba` gives an **estimated model probability** for the phishing class. It is not calibrated (ECE 0.104) and is not a measured probability of criminal activity.
+- Bands: `likely_benign` < 0.50 · `suspicious` 0.50–0.80 · `high_risk` ≥ 0.80 · *uncertain* flag at 0.35–0.65.
+- Observed phishing rate per band on the test set: high risk 98.6%, suspicious 78.7%, **likely benign 16.6%**. "Likely benign" is not "safe".
+- The uncertain flag fires on 22% of test URLs; accuracy is 0.62 inside the band and 0.92 outside.
+- Risk score = round(probability × 100). It is a display of the model output, not a risk measurement.
 
-## 8. Explanation capability
+## 8. Explanations
 
-Exact per-instance decision-path decomposition (treeinterpreter method) attributes each tree's probability change to the split feature, averaged over all 300 trees; verified by tests to reproduce `predict_proba` within 1e-6. Contributions are reported with direction (toward phishing / toward benign) and the exactness check is exposed to the UI. Rule-derived "observed characteristics" are always clearly separated from model-derived contributions.
+Exact decision-path decomposition (the treeinterpreter method): each tree's change in phishing probability along the URL's path is attributed to the split feature, then averaged over the 200 trees. On 500 test URLs, bias plus contributions reproduced `predict_proba` with a maximum absolute error of 0.0. Rule-derived "observed characteristics" are always shown separately from model contributions.
 
-## 9. Known limitations & failure modes
+Isotonic calibration would reduce ECE to 0.044, but it is not applied, because a non-additive calibration map would break exact explanations.
 
-- Lexical-only: phishing that mimics benign URL structure can pass; benign long/odd URLs can be flagged.
-- Dataset bias: benign class skews to popular domains; less-famous legitimate sites with unusual structures are over-flagged risk.
-- Static snapshot: phishing kits evolve; retraining needed (no drift monitoring yet).
-- Random-split metrics overstate real-world generalisation (see grouped-split check).
-- Uncalibrated probabilities; thresholds chosen as documented aids, not optimised operating points.
+## 9. Known limitations and failure modes
 
-## 10. Model versioning & integrity
+- **Lexical only.** Phishing on short, clean-looking URLs is missed most often: FNR is 36% in the shortest length quartile, against 23% overall.
+- **One corpus from about 2020, balanced 50/50.** Real traffic is mostly legitimate, so precision in deployment will be lower.
+- **URL shorteners and genuine login pages** of popular services score as phishing-like. Outlook login hosts are flagged in the Majestic probe, and Google's real sign-in URL (`accounts.google.com/signin/...`) scores 0.64 ("suspicious") in the validator smoke test. Login vocabulary in a URL is exactly what phishing imitates.
+- **Rare red flags.** Punycode, non-standard ports, executable downloads and credentials-in-URL almost never occur in the corpus, so the model has barely learned them.
+- **Approximate domains.** Registrable domains use a small suffix list, not the full Public Suffix List.
+- **No adversarial testing.** Attackers can adapt URLs to evade lexical models.
 
-- Feature schema version 1.0.0 is embedded in artefacts and in code; the API refuses to serve on mismatch (train/serve skew guard).
-- Only artefacts produced by this repository's research notebook (`ml/notebooks/`) are loaded; downloaded serialised models are treated as untrusted.
-- Retraining: run the notebook top to bottom; its deployment section regenerates all four artefacts with fresh metadata and metrics and validates them.
+## 10. Versioning and integrity
+
+- The feature schema version (1.1.0) is stored in the artefacts and checked against the code. The API refuses to serve on a mismatch.
+- Only artefacts produced by this repository's notebook are loaded. Downloaded serialised models are treated as untrusted.
+- Retraining: run the notebook top to bottom. Its deployment section writes all four artefacts and runs `backend/scripts/validate_model.py`.

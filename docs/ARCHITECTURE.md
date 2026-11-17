@@ -11,8 +11,8 @@ flowchart TD
     GW --> AUTH["Token verification<br/>JWKS ES256 signature · iss/aud/exp<br/>(or Auth /user endpoint fallback)"]
     AUTH --> V["Server-side validation<br/>scheme allow-list · length & size caps"]
     V --> P["URL parser<br/>urllib · NO network I/O"]
-    P --> FX["Shared feature extractor<br/>33 lexical features · schema v1.0.0"]
-    FX --> M["Trained model<br/>Random Forest · joblib artefact"]
+    P --> FX["Shared feature extractor<br/>33 lexical features · schema v1.1.0"]
+    FX --> M["Trained model<br/>Extra Trees · joblib artefact"]
     M --> EX["Explanation service<br/>exact tree-path decomposition<br/>+ rule-derived observations"]
     EX --> R["Scan response<br/>classification · risk score · evidence<br/>recommendations · limitations"]
     R --> FE
@@ -83,7 +83,7 @@ The SQL schema and RLS policies live in `supabase/migrations/0001_init.sql` (ide
 3. **Feature extraction** (`services/feature_extractor.py`): the *same* module imported by the training scripts. 33 features in a fixed order; order drift is asserted against `FEATURE_NAMES`; schema version guards train/serve consistency.
 4. **Inference** (`services/inference_service.py`): `predict_proba` on a DataFrame (feature names preserved) → estimated phishing probability → binary decision at 0.5 → documented bands → uncertainty flag → risk score = round(p×100).
 5. **Explanation** (`services/explanation_service.py`):
-   - *Model evidence:* exact decision-path decomposition for Random Forest (each tree's probability change attributed to the split feature, averaged over trees; verified to reproduce `predict_proba` within 1e-6), or coefficient × standardised-value for Logistic Regression; otherwise an explicitly labelled rule-based fallback. **No numbers are ever invented.**
+   - *Model evidence:* exact decision-path decomposition for tree ensembles (Random Forest / Extra Trees) (each tree's probability change attributed to the split feature, averaged over trees; verified to reproduce `predict_proba` within 1e-6), or coefficient × standardised-value for Logistic Regression; otherwise an explicitly labelled rule-based fallback. **No numbers are ever invented.**
    - *Observed characteristics:* plain-language statements generated only from features actually present.
    - *Interpretation, recommendations, cannot-determine:* rule-selected per band and per evidence.
 6. **Persistence (optional, user-scoped):** `history_service.py` / `supabase_store.py` store the record per `HISTORY_MODE` (`disabled`/`memory`/`sqlite`/`supabase`, FIFO cap 500). In `supabase` mode the insert carries the caller's verified JWT so RLS (`user_id = auth.uid()`) is the final authority; storage failure never breaks a scan response.

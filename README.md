@@ -50,6 +50,16 @@ FastAPI
 
 Full description: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+### Model at a glance
+
+The classifier is built in a reproducible research notebook ([ml/](ml/README.md)) and evaluated on **2,110 URLs from domains it never saw during training**:
+
+| PR-AUC | ROC-AUC | Accuracy | Precision | Recall | Explanations |
+|---|---|---|---|---|---|
+| 0.928 (95% CI 0.901–0.949) | 0.931 | 0.857 | 0.894 | 0.771 | exact for every URL |
+
+The selected model is an Extra Trees ensemble. It flags 79% of fresh OpenPhish URLs and about 3% of the 1,000 most-linked legitimate domains. The study also shows that random train/test splits would have overstated PR-AUC by 0.04. Details: [docs/MODEL_CARD.md](docs/MODEL_CARD.md).
+
 **Stack:** React 19, TypeScript, Vite, Tailwind CSS 4, Recharts, Framer Motion · Python 3.12, FastAPI, Pydantic, PyJWT · scikit-learn, pandas, NumPy · Supabase Auth + Postgres (RLS) · pytest.
 
 ---

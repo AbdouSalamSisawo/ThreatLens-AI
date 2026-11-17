@@ -16,7 +16,7 @@ This document discloses, honestly and completely, every external data source, AI
 
 | Component | Provider / origin | Identifier |
 |---|---|---|
-| URL classifier (the only ML model in the product) | Trained locally with scikit-learn from the project's own research notebook (`ml/notebooks/threatlens_phishing_url_detection.ipynb`) | `threatlens-phishing-url-classifier` v1.0.0 |
+| URL classifier (the only ML model in the product) | Trained locally with scikit-learn from the project's own research notebook (`ml/notebooks/threatlens_phishing_url_detection.ipynb`) | `threatlens-phishing-url-classifier` v2.0.0 |
 | External hosted AI APIs | **None used.** No OpenAI/Hugging Face/other inference APIs are called | — |
 
 ## 3. Training dataset sources
@@ -24,7 +24,7 @@ This document discloses, honestly and completely, every external data source, AI
 | | |
 |---|---|
 | **Dataset** | "TabNetone" phishing-URL corpus (Hugging Face id: `pirocheto/phishing-url`) |
-| **Origin** | Compiled by A. Hannousse & S. Yahiouche for arXiv:2010.12847 (*"Phishing URL detection: a real-world assessment"*) from public phishing feeds and legitimate crawl sources |
+| **Origin** | Compiled by A. Hannousse & S. Yahiouche for arXiv:2010.12847 (*"Towards Benchmark Datasets for Machine Learning Based Website Phishing Detection: An experimental study"*, Engineering Applications of Artificial Intelligence 104, 104347, 2021, doi:10.1016/j.engappai.2021.104347) from public phishing feeds and legitimate crawl sources |
 | **Source URL** | https://huggingface.co/datasets/pirocheto/phishing-url (files `data/train.parquet`, `data/test.parquet`) |
 | **Retrieval date** | 2026-10-29 |
 | **Licence / usage terms** | CC-BY-4.0 — use with attribution; this declaration and the README provide it |
@@ -46,7 +46,8 @@ This document discloses, honestly and completely, every external data source, AI
 |---|---|
 | Frontend | react, react-dom, react-router-dom, recharts, lucide-react, framer-motion, tailwindcss, vite, typescript (all MIT-style licences) |
 | Backend | fastapi, uvicorn, pydantic, pydantic-settings (MIT/BSD); scikit-learn, pandas, numpy, joblib (BSD); sqlite3 (Python stdlib) |
-| Testing | pytest, pytest-asyncio, FastAPI TestClient, httpx |
+| Testing | pytest, FastAPI TestClient, httpx |
+| ML research | Jupyter (jupyterlab, ipykernel, nbclient), matplotlib, scipy, pyarrow (BSD-style licences) |
 
 ## 5. Optional external APIs
 
@@ -54,7 +55,7 @@ This document discloses, honestly and completely, every external data source, AI
 
 ## 6. Where machine learning is used
 
-- **One place only:** `POST /api/scan` → the trained Random Forest assigns an estimated probability to the phishing class for the submitted URL's feature vector.
+- **One place only:** `POST /api/scan` → the trained Extra Trees model assigns an estimated probability to the phishing class for the submitted URL's feature vector.
 
 ## 7. Where deterministic rules are used (no ML)
 
@@ -90,7 +91,7 @@ This document discloses, honestly and completely, every external data source, AI
 - URL-only analysis; no page content, behaviour or reputation signals.
 - Uncalibrated probabilities; bands are decision aids, not measured risk.
 - Single-user prototype: no accounts, in-process rate limiting, local history only.
-- Model version 1.0.0 is a static snapshot; retraining required to track evolving phishing.
+- Model version 2.0.0 is a static snapshot; retraining required to track evolving phishing.
 
 ## 12. Human oversight
 

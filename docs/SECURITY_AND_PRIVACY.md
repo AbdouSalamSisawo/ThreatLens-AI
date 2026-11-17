@@ -6,7 +6,7 @@ This document describes the security controls and data handling **as actually im
 
 ## 1. What the scanner analyses
 
-Only the submitted URL **string**. The backend parses the text and computes 33 lexical features; the trained Random Forest classifies them. No page content, screenshots, downloads, redirects, cookies, credentials, or browser state are involved.
+Only the submitted URL **string**. The backend parses the text and computes 33 lexical features; the trained tree-ensemble model classifies them. No page content, screenshots, downloads, redirects, cookies, credentials, or browser state are involved.
 
 ## 2. The destination website is never contacted
 
