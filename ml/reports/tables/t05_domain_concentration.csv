@@ -1,0 +1,3 @@
+class,urls,unique_domains,urls_per_domain_mean,largest_domain_urls,share_urls_in_domains_with_5plus
+legitimate,5715,3903,1.4642582628747118,177,0.26019247594050743
+phishing,5488,2599,2.1115813774528664,307,0.41927842565597667

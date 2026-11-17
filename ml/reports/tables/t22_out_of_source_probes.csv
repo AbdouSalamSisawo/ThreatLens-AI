@@ -1,0 +1,5 @@
+probe,subset,metric,urls,flagged,rate,wilson95_low,wilson95_high
+OpenPhish (all phishing),all,recall proxy,300,237,0.79,0.7403879054849664,0.832278905116347
+OpenPhish (all phishing),not in training corpus,recall proxy,300,237,0.79,0.7403879054849664,0.832278905116347
+"Majestic top 1,000 (legitimate)",all,false-positive-rate proxy,1000,28,0.028,0.019442147463132154,0.040170444802420505
+"Majestic top 1,000 (legitimate)",not in training corpus,false-positive-rate proxy,720,25,0.034722222222222224,0.02362770690712477,0.050755417798611945

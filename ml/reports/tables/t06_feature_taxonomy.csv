@@ -1,0 +1,34 @@
+feature,group,description
+url_length,length,Total character length of the submitted URL.
+hostname_length,length,Character length of the hostname.
+path_length,length,Character length of the path component.
+query_length,length,Character length of the query string.
+nb_dots_url,character composition,Number of '.' characters in the full URL.
+nb_dots_hostname,character composition,Number of '.' characters in the hostname.
+nb_subdomain_labels,host structure,Estimated number of subdomain labels beyond registrable domain.
+nb_hyphens_url,character composition,Number of '-' characters in the full URL.
+nb_hyphens_hostname,character composition,Number of '-' characters in the hostname.
+nb_underscores_url,character composition,Number of '_' characters in the full URL.
+nb_digits_url,character composition,Number of digit characters in the full URL.
+nb_digits_hostname,character composition,Number of digit characters in the hostname.
+ratio_digits_url,character composition,Share of digit characters in the full URL.
+ratio_digits_hostname,character composition,Share of digit characters in the hostname.
+nb_pct_encoded,character composition,Number of percent-encoded sequences (e.g. %20).
+nb_query_params,"scheme, path and query",Number of query-string parameters.
+nb_ampersand,character composition,Number of '&' characters in the full URL.
+nb_at_symbol,character composition,Number of '@' characters (can hide the real host).
+nb_double_slash_path,"scheme, path and query",Occurrences of '//' inside path/query (open-redirect style).
+path_depth,"scheme, path and query",Number of path segments.
+has_ip,host structure,Hostname is an IPv4/IPv6 address instead of a domain name.
+has_non_standard_port,host structure,Explicit port that is not 80/443.
+is_https,"scheme, path and query",Original submission used the https:// scheme.
+has_credentials_pattern,host structure,Userinfo section contains 'user:password@'.
+is_shortener_domain,curated lexicons,Domain appears on the documented URL-shortener list.
+has_punycode,host structure,Hostname contains punycode ('xn--') labels.
+has_suspicious_tld,curated lexicons,TLD appears on the documented high-abuse TLD list.
+has_executable_extension,curated lexicons,Path ends with an executable/archive extension.
+has_long_hostname,length,Hostname is 30 characters or longer.
+nb_suspicious_tokens,curated lexicons,Count of generic security/urgency terms from the documented list.
+has_brand_token_outside_domain,curated lexicons,A known brand token appears in the URL but not in the registrable domain.
+nb_hex_labels_hostname,host structure,Hostname labels that are long hexadecimal strings.
+hostname_entropy,character composition,Shannon entropy of hostname characters (randomness indicator).

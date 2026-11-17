@@ -25,7 +25,7 @@ ml/
 | 4 | Exploratory data analysis | class balance, URL structure, TLDs, domain concentration |
 | 5 | Feature extraction with the backend's shared extractor + univariate analysis | effect sizes, mutual information, correlation |
 | 6 | Experimental protocol: domain-disjoint test split, grouped cross-validation | split audit (zero domain overlap) |
-| 7 | Baselines and model comparison | 9 candidate models under grouped CV |
+| 7 | Baselines and model comparison | 8 learners + 2 baselines under grouped CV |
 | 8 | Hyperparameter tuning | tuned configurations |
 | 9 | Statistical comparison and pre-registered model selection | corrected resampled *t*-tests |
 | 10 | Held-out test evaluation with bootstrap confidence intervals | final metrics, ROC/PR curves |

@@ -1,0 +1,7 @@
+feature_a,feature_b,spearman_rho
+nb_dots_hostname,nb_subdomain_labels,1.0
+nb_digits_hostname,ratio_digits_hostname,0.9989763830431024
+query_length,nb_query_params,0.9976803150994042
+nb_digits_url,ratio_digits_url,0.9888854190482865
+path_length,path_depth,0.8861596450835678
+hostname_length,hostname_entropy,0.8576990778938874

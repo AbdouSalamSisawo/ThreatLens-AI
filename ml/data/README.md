@@ -11,7 +11,7 @@ The data files are **not committed**. Section 2 of the notebook downloads each o
 
 ## About the labelled corpus
 
-The corpus was compiled by A. Hannousse and S. Yahiouche (preprint arXiv:2010.12847; see Attribution below — verify the title before citing). It combines phishing URLs from public feeds (PhishTank, OpenPhish) with legitimate URLs from crawls of popular sites. The Hugging Face release ships 11,430 URLs, balanced between classes, plus 87 pre-computed features.
+The corpus was compiled by A. Hannousse and S. Yahiouche for *"Towards Benchmark Datasets for Machine Learning Based Website Phishing Detection: An experimental study"* (Engineering Applications of Artificial Intelligence, 2021; arXiv:2010.12847). It combines phishing URLs from public feeds (PhishTank, OpenPhish) with legitimate URLs from crawls of popular sites. The Hugging Face release ships 11,430 URLs, balanced between classes, plus 87 pre-computed features.
 
 **ThreatLens uses only the `url` and `status` columns.** The pre-computed features are discarded on purpose. All features are recomputed from the raw URL with the backend's shared extractor (`backend/app/services/feature_extractor.py`), which is the same code that runs at inference time.
 
@@ -21,7 +21,7 @@ The OpenPhish feed and the Majestic list change daily. If you re-download them, 
 
 ## Attribution
 
-> ⚠️ **Verify before citing.** This reference was written while offline and has not been checked against the publisher. Earlier project documents gave a different title for arXiv:2010.12847 ("Phishing URL detection: a real-world assessment"). Confirm the title, volume and DOI at https://arxiv.org/abs/2010.12847 before submission.
+Verified against arXiv metadata (2026-11-18):
 
 > Hannousse, A., & Yahiouche, S. (2021). Towards benchmark datasets for machine learning based website phishing detection: An experimental study. *Engineering Applications of Artificial Intelligence*, 104, 104347. https://doi.org/10.1016/j.engappai.2021.104347
 
