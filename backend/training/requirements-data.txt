@@ -1,2 +1,0 @@
-# Extra requirements for dataset acquisition/preparation (parquet support)
-pyarrow>=15.0

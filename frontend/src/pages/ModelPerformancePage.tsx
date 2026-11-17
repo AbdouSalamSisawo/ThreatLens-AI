@@ -109,8 +109,9 @@ export function ModelPerformancePage() {
             <p className="mt-2 text-sm leading-relaxed text-text-dim">
               No trained model artefacts were found on the server. This page
               displays only real evaluation output produced by{" "}
-              <span className="font-mono text-info">training/train_model.py</span>.
-              Train the model, then reload — nothing is fabricated here.
+              the ML notebook in{" "}
+              <span className="font-mono text-info">ml/notebooks/</span>.
+              Run the notebook to train and deploy the model, then reload — nothing is fabricated here.
             </p>
           </div>
         )}

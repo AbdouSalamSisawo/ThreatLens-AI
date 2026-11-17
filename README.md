@@ -21,9 +21,10 @@ ThreatLens AI analyses a submitted URL with a trained machine-learning model, ex
 │   ├── app/                 API routes, auth, services, ML loading
 │   ├── artifacts/           ← trained model artefacts go here (not committed)
 │   ├── tests/               pytest suite (trains its own tiny fixture model)
-│   ├── training/            dataset prep, training and validation scripts
+│   ├── scripts/             validate_model.py (deployment gate for artefacts)
 │   ├── requirements.txt     runtime dependencies
-│   └── requirements-dev.txt tests + training extras
+│   └── requirements-dev.txt test dependencies
+├── ml/                      research notebook: data → model → deploy (see ml/README.md)
 ├── frontend/                React 19 + TypeScript + Vite + Tailwind SPA
 ├── supabase/migrations/     Postgres schema + Row Level Security policies
 ├── docs/                    architecture, model card, security, declarations
@@ -78,10 +79,10 @@ To supply a model, copy the artefacts in and validate them:
 ```bash
 cd backend
 cp /path/to/your/artifacts/* artifacts/
-python training/validate_model.py      # exit 0 = safe to serve
+python scripts/validate_model.py       # exit 0 = safe to serve
 ```
 
-Or train one with the included pipeline. The complete procedure, artefact contract and rollback steps are in [docs/MODEL_DROPIN.md](docs/MODEL_DROPIN.md).
+Or build one with the research notebook in [ml/](ml/README.md): it downloads the data from its original sources, trains and evaluates the models, and deploys the selected one into `backend/artifacts/`. The complete procedure, artefact contract and rollback steps are in [docs/MODEL_DROPIN.md](docs/MODEL_DROPIN.md).
 
 ### 3. Frontend
 
@@ -207,7 +208,8 @@ Details: [docs/SECURITY_AND_PRIVACY.md](docs/SECURITY_AND_PRIVACY.md).
 |---|---|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Components, scan flow, design decisions |
 | [docs/MODEL_DROPIN.md](docs/MODEL_DROPIN.md) | Supplying, training and validating the model |
-| [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | Model card (reference-model figures) |
+| [ml/README.md](ml/README.md) | ML research workflow (notebook, data provenance, reports) |
+| [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | Model card |
 | [docs/SECURITY_AND_PRIVACY.md](docs/SECURITY_AND_PRIVACY.md) | Threat model and controls |
 | [docs/AI_AND_DATA_DECLARATION.md](docs/AI_AND_DATA_DECLARATION.md) | Data sources, licences, AI-tool disclosure |
 | [docs/PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md) · [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | Competition summary and live-demo flow |

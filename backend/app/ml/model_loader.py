@@ -2,7 +2,7 @@
 Trusted model artefact loading.
 
 Only artefacts produced by this project's own training pipeline
-(backend/training/train_model.py) are loaded. Downloaded serialised models
+(the ML notebook in ml/notebooks/) are loaded. Downloaded serialised models
 are treated as untrusted and never auto-loaded. If the artefact is missing
 or incompatible the service reports an explicit error state - it NEVER
 falls back to a substitute model, random output, or mock predictions.
@@ -47,7 +47,7 @@ def load_model(settings: Settings) -> LoadedModel:
             "Model artefacts are missing: "
             + ", ".join(missing)
             + ". Place the trained artefacts in backend/artifacts/ and run "
-            "'python training/validate_model.py' (see docs/MODEL_DROPIN.md)."
+            "'python scripts/validate_model.py' (see docs/MODEL_DROPIN.md)."
         )
 
     try:

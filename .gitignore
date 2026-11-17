@@ -9,7 +9,7 @@ venv/
 node_modules/
 frontend/dist/
 
-# --- Model artefacts (supplied separately; see docs/MODEL_DROPIN.md) ---
+# --- Model artefacts (exported by the ML notebook; see docs/MODEL_DROPIN.md) ---
 backend/artifacts/*
 !backend/artifacts/README.md
 
@@ -19,8 +19,12 @@ backend/static/
 *.db
 *.db-journal
 
-# --- Training datasets (downloaded; see docs/MODEL_DROPIN.md) ---
-data/
+# --- ML datasets (downloaded by the notebook from their original sources) ---
+ml/data/*
+!ml/data/README.md
+
+# --- Jupyter ---
+.ipynb_checkpoints/
 
 # --- Environment & secrets (.env.example templates ARE committed) ---
 .env

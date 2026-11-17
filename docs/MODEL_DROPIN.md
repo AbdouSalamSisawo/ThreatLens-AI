@@ -37,13 +37,13 @@ From `backend/`:
 cp /path/to/your/artifacts/* artifacts/
 
 # 2. Validate — one command, same checks the API runs at startup + smoke inference
-python training/validate_model.py
+python scripts/validate_model.py
 
 # 3. Restart the API (artefacts are loaded once at startup)
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-`validate_model.py` exits `0` only when:
+`scripts/validate_model.py` exits `0` only when:
 
 - all four files are present;
 - **the production loader accepts them** (this is the exact
@@ -71,22 +71,21 @@ output, no mock.
 
 ## 4. Training your own model from scratch
 
-```bash
-# From backend/ (Python 3.11+, after: pip install -r requirements-dev.txt)
-mkdir -p ../data/raw
-# Download into ../data/raw :
-#   https://huggingface.co/datasets/pirocheto/phishing-url/resolve/main/data/train.parquet
-#   https://huggingface.co/datasets/pirocheto/phishing-url/resolve/main/data/test.parquet
-# Optional honesty probes:
-#   ../data/raw/openphish_feed.txt    https://openphish.com/feed.txt
-#   ../data/raw/majestic_million.csv  https://downloads.majestic.com/majestic_million.csv
+Training is done in the research notebook, not in standalone scripts:
 
-python training/prepare_dataset.py     # -> ../data/processed/phishing_clean.csv
-python training/train_model.py         # -> writes all four artefacts
-python training/validate_model.py      # must exit 0
+```bash
+pip install -r ml/requirements.txt
+jupyter lab ml/notebooks/threatlens_phishing_url_detection.ipynb   # Run All
 ```
 
-The training pipeline uses the **same shared feature extractor** as the API
+The notebook downloads the data from its original sources (checksum-verified,
+see `ml/data/README.md`), cleans it, compares and tunes candidate models with
+domain-grouped cross-validation, evaluates the selected model once on a
+domain-disjoint test set, and, in its deployment section, writes the four
+artefacts into `backend/artifacts/` and runs `scripts/validate_model.py`
+automatically. It can also be run on Google Colab (see `ml/README.md`).
+
+The notebook imports the **same shared feature extractor** as the API
 (`app/services/feature_extractor.py`), so train/serve skew is impossible by
 construction; the schema-version check in the loader is the second guard.
 
@@ -99,12 +98,12 @@ cp -r backend/artifacts ~/artifacts-backup-$(date +%F)
 ```
 
 Restoring is the reverse: copy the backup's four files back into
-`backend/artifacts/`, run `python training/validate_model.py`, restart the API.
+`backend/artifacts/`, run `python scripts/validate_model.py`, restart the API.
 
 ## 6. Security rules for artefacts
 
 - Only load artefacts **produced by this project's training pipeline**
-  (`backend/training/train_model.py`). `app/ml/model_loader.py` documents this
+  (the research notebook in `ml/notebooks/`). `app/ml/model_loader.py` documents this
   policy: downloaded serialised models are treated as untrusted and never
   auto-loaded.
 - A model file from an unknown source can execute arbitrary code when

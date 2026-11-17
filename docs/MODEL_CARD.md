@@ -90,5 +90,5 @@ Exact per-instance decision-path decomposition (treeinterpreter method) attribut
 ## 10. Model versioning & integrity
 
 - Feature schema version 1.0.0 is embedded in artefacts and in code; the API refuses to serve on mismatch (train/serve skew guard).
-- Only artefacts produced by this repository's `training/train_model.py` are loaded; downloaded serialised models are treated as untrusted.
-- Retraining: `python training/prepare_dataset.py && python training/train_model.py` regenerates artefacts atomically with fresh metadata and metrics.
+- Only artefacts produced by this repository's research notebook (`ml/notebooks/`) are loaded; downloaded serialised models are treated as untrusted.
+- Retraining: run the notebook top to bottom; its deployment section regenerates all four artefacts with fresh metadata and metrics and validates them.

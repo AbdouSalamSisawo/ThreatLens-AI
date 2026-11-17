@@ -1,0 +1,20 @@
+# ThreatLens AI - ML research environment (pinned for reproducibility).
+# scikit-learn / numpy MUST match backend/requirements.txt: the exported model
+# is a joblib pickle and is only guaranteed to load under the same versions.
+scikit-learn==1.6.1
+numpy==2.5.5
+pandas==2.3.3
+scipy==1.18.1
+pyarrow==26.0.1
+joblib==1.6.0
+matplotlib==3.10.8
+requests==2.32.5
+
+# Notebook tooling
+jupyterlab==4.5.1
+ipykernel==7.1.0
+nbclient==0.10.4
+nbformat==5.10.4
+
+# Backend runtime deps used by the notebook's deploy/validation section
+pydantic-settings>=2.3,<3.0

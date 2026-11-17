@@ -16,7 +16,7 @@ This document discloses, honestly and completely, every external data source, AI
 
 | Component | Provider / origin | Identifier |
 |---|---|---|
-| URL classifier (the only ML model in the product) | Trained locally with scikit-learn from the project's own pipeline (`training/train_model.py`) | `threatlens-phishing-url-classifier` v1.0.0 |
+| URL classifier (the only ML model in the product) | Trained locally with scikit-learn from the project's own research notebook (`ml/notebooks/threatlens_phishing_url_detection.ipynb`) | `threatlens-phishing-url-classifier` v1.0.0 |
 | External hosted AI APIs | **None used.** No OpenAI/Hugging Face/other inference APIs are called | — |
 
 ## 3. Training dataset sources

@@ -3,12 +3,12 @@ ThreatLens AI - model artefact validator.
 
 One command that answers: "can this backend serve this model right now?"
 
-    cd threatlens/backend
-    python training/validate_model.py                  # validate ./artifacts
-    python training/validate_model.py --artifacts-dir /path/to/artifacts
+    cd backend
+    python scripts/validate_model.py                   # validate ./artifacts
+    python scripts/validate_model.py --artifacts-dir /path/to/artifacts
 
-Run it after training, after dropping new artefacts into backend/artifacts/,
-or before any deploy. Exit code 0 = all checks passed; 1 = at least one
+Run it after training (the ML notebook runs it automatically when it deploys),
+after dropping new artefacts into backend/artifacts/, or before any deploy. Exit code 0 = all checks passed; 1 = at least one
 check failed, with an actionable message.
 
 The central check runs the SAME loader the API uses at startup
@@ -84,12 +84,9 @@ def main() -> int:
     if missing:
         bad("Missing artefact file(s): " + ", ".join(missing))
         print(
-            "\n  Fix: copy the four artefact files produced by "
-            "backend/training/train_model.py into this directory,\n"
-            "  or retrain from scratch:\n"
-            "      python training/prepare_dataset.py\n"
-            "      python training/train_model.py\n"
-            "  Full procedure: threatlens/MODEL_DROPIN.md\n"
+            "\n  Fix: run the ML notebook (ml/notebooks/); its deploy section\n"
+            "  exports the four artefact files into backend/artifacts/.\n"
+            "  Full procedure: docs/MODEL_DROPIN.md\n"
         )
         return 1
     ok("All four artefact files are present")
