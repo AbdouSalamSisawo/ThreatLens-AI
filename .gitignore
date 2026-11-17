@@ -1,0 +1,36 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+
+# --- Model artefacts (supplied separately; see docs/MODEL_DROPIN.md) ---
+backend/artifacts/*
+!backend/artifacts/README.md
+
+# --- Runtime data ---
+backend/data/
+backend/static/
+*.db
+*.db-journal
+
+# --- Training datasets (downloaded; see docs/MODEL_DROPIN.md) ---
+data/
+
+# --- Environment & secrets (.env.example templates ARE committed) ---
+.env
+.env.*
+!.env.example
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+*.log

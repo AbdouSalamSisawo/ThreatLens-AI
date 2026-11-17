@@ -1,0 +1,27 @@
+# Single-origin deployment: http://localhost:8000 serves both the SPA and /api.
+#
+# Frontend build args are read from the shell or a root-level .env file:
+#   VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY
+# Backend runtime settings are read from backend/.env (see backend/.env.example).
+services:
+  threatlens:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      ENVIRONMENT: production
+      DATABASE_PATH: /app/data/threatlens.db
+    volumes:
+      - ./backend/artifacts:/app/artifacts:ro
+      - threatlens-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  threatlens-data:
