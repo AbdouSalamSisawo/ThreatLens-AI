@@ -108,6 +108,31 @@ def test_boosting_evidence_is_exact(trained_pipeline, scaled):
         assert evidence["contributions"], "a fitted booster must attribute something"
 
 
+def test_boosting_attributions_are_centred_and_bounded(trained_pipeline):
+    """
+    With expected-value node outputs, every feature's contribution averages to
+    zero over the training data, and attributions stay on the scale of the
+    log-odds (Newton-step node values would give large cancelling terms).
+    """
+    import numpy as np
+    from sklearn.ensemble import HistGradientBoostingClassifier
+
+    _, _, urls, labels = trained_pipeline
+    pipe = _fit(HistGradientBoostingClassifier(max_iter=60, min_samples_leaf=2, l2_regularization=1.0,
+                                               random_state=0), urls, labels)
+    X = _frame(urls)
+    totals = {name: 0.0 for name in FEATURE_NAMES}
+    for i in range(len(urls)):
+        evidence = compute_model_evidence(pipe, {n: float(X.iloc[i][n]) for n in FEATURE_NAMES})
+        raw = evidence["bias"] + sum(evidence["contributions"].values())
+        assert sum(abs(v) for v in evidence["contributions"].values()) <= abs(raw - evidence["bias"]) + 25
+        for name, value in evidence["contributions"].items():
+            totals[name] += value
+    assert max(abs(v) / len(urls) for v in totals.values()) < 1e-6
+    assert "expected" in evidence["method_description"]
+    assert np.isfinite(evidence["bias"])
+
+
 def test_extra_trees_evidence_is_exact(trained_pipeline):
     from sklearn.ensemble import ExtraTreesClassifier
 

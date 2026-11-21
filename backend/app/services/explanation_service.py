@@ -29,6 +29,7 @@ presented as per-URL explanations.
 from __future__ import annotations
 
 import math
+import weakref
 from collections import defaultdict
 from typing import Any
 
@@ -131,11 +132,17 @@ def contributions_for_boosting(
     Exact log-odds decomposition for a binary HistGradientBoostingClassifier.
 
     The raw score is baseline + sum over trees of the leaf value reached.
-    Within each tree the leaf value telescopes along the decision path:
-    value(leaf) = value(root) + sum of (value(child) - value(node)), and each
-    delta is attributed to the split feature. Internal node values are the
-    sample-weighted means of their children, so the attribution is meaningful
-    as well as exact. sigmoid(bias + sum(contributions)) == predict_proba.
+    Each node is given its EXPECTED output: the training-sample-weighted mean
+    of the leaf values beneath it (the treeinterpreter / Saabas definition).
+    Along the decision path the leaf value telescopes,
+    E(leaf) = E(root) + sum of (E(child) - E(node)), and each delta is
+    attributed to the split feature; E(root) goes into the bias. Hence
+    sigmoid(bias + sum(contributions)) == predict_proba exactly, and each
+    feature's contribution averages to zero over the training data.
+
+    scikit-learn's stored internal-node `value` is that node's own Newton
+    step, not an expectation of its subtree; using it would still sum
+    exactly but produce large, mutually cancelling attributions.
 
     Uses scikit-learn's fitted predictor arrays (version pinned in
     requirements); the caller verifies exactness on every request.
@@ -162,12 +169,13 @@ def contributions_for_boosting(
     if is_categorical is not None and np.any(is_categorical):
         return None
 
+    expected_values = _boosting_expected_values(model, predictors)
     bias = float(np.ravel(baseline)[0])
     contrib: dict[str, float] = defaultdict(float)
-    for per_iteration in predictors:
+    for per_iteration, expected in zip(predictors, expected_values):
         nodes = per_iteration[0].nodes  # binary task: one tree per iteration
         node = 0
-        bias += float(nodes["value"][0])
+        bias += float(expected[0])
         while nodes["is_leaf"][node] == 0:
             feat_idx = int(nodes["feature_idx"][node])
             value = x_model[feat_idx]
@@ -176,11 +184,37 @@ def contributions_for_boosting(
             else:
                 go_left = value <= nodes["num_threshold"][node]
             child = int(nodes["left"][node] if go_left else nodes["right"][node])
-            contrib[FEATURE_NAMES[feat_idx]] += float(
-                nodes["value"][child] - nodes["value"][node]
-            )
+            contrib[FEATURE_NAMES[feat_idx]] += float(expected[child] - expected[node])
             node = child
     return bias, dict(contrib)
+
+
+# Expected node outputs depend only on the fitted model, so they are computed
+# once per model object and released with it.
+_EXPECTED_CACHE: "weakref.WeakKeyDictionary[Any, list[np.ndarray]]" = weakref.WeakKeyDictionary()
+
+
+def _boosting_expected_values(model: Any, predictors: Any) -> list[np.ndarray]:
+    cached = _EXPECTED_CACHE.get(model)
+    if cached is not None and len(cached) == len(predictors):
+        return cached
+    result = []
+    for per_iteration in predictors:
+        nodes = per_iteration[0].nodes
+        expected = nodes["value"].astype(float).copy()  # leaves keep their value
+        counts = nodes["count"].astype(float)
+        for k in np.argsort(-nodes["depth"], kind="stable"):  # children before parents
+            if nodes["is_leaf"][k] == 0:
+                left, right = nodes["left"][k], nodes["right"][k]
+                total = counts[left] + counts[right]
+                if total > 0:
+                    expected[k] = (expected[left] * counts[left] + expected[right] * counts[right]) / total
+        result.append(expected)
+    try:
+        _EXPECTED_CACHE[model] = result
+    except TypeError:  # pragma: no cover - unhashable estimator; skip caching
+        pass
+    return result
 
 
 def compute_model_evidence(pipeline: Any, features: dict[str, float]) -> dict:
@@ -247,9 +281,10 @@ def compute_model_evidence(pipeline: Any, features: dict[str, float]) -> dict:
                 "method": "tree_path_log_odds",
                 "method_description": (
                     "Exact decision-path decomposition of the gradient-boosted "
-                    "trees: each tree's change in log-odds along the path taken "
-                    "by this URL is attributed to the feature that caused the "
-                    "split, summed over all trees; bias = baseline log-odds."
+                    "trees: each tree's change in expected log-odds along the "
+                    "path taken by this URL is attributed to the feature that "
+                    "caused the split, summed over all trees; bias = average "
+                    "log-odds of the training data."
                 ),
                 "bias": round(bias, 6),
                 "probability_check": {
