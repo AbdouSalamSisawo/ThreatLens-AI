@@ -1,7 +1,0 @@
-quantity,value
-"training time on development set (s, all cores)",3.28472420014441
-"serialised model size (MB, joblib compress=3)",6.156765
-"feature extraction + prediction, median (ms)",43.98234991822392
-"feature extraction + prediction, p95 (ms)",73.18256000289692
-"exact explanation, median (ms)",113.81304997485131
-"exact explanation, p95 (ms)",181.68739003594965

@@ -1,0 +1,4 @@
+feature set,n_features,cv_pr_auc,cv_pr_auc_std,flip rate: toggle www.,edited URLs: toggle www.,flip rate: upper-case host,edited URLs: upper-case host,flip rate: toggle trailing slash (home pages),edited URLs: toggle trailing slash (home pages)
+"schema 1: 33 features, raw URL",33,0.917420058586073,0.017816603566555084,0.24205432750467393,9093,0.0,9093,0.11392884178652536,2642
+"57 features, raw URL",57,0.9461698293592875,0.01459383681087104,0.2654789398438359,9093,0.0,9093,0.18811506434519304,2642
+"57 features, canonical URL (deployed)",57,0.9401148713997098,0.013262495886962836,0.0,9093,0.0,9093,0.0,2642
