@@ -21,7 +21,7 @@ from app.services.feature_extractor import (  # noqa: E402
     FEATURE_NAMES,
     feature_vector,
 )
-from tests.conftest import BENIGN_FIXTURE_URLS, PHISHING_FIXTURE_URLS  # noqa: E402
+from tests.conftest import BENIGN_FIXTURE_URLS, PHISHING_FIXTURE_URLS, write_metadata  # noqa: E402
 
 
 def _frame(urls):
@@ -83,6 +83,55 @@ def test_tree_path_evidence_is_exact(trained_pipeline):
         assert check is not None and check["exact"] is True
 
 
+def _fit(estimator, urls, labels, scaled=False):
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    steps = ([("scaler", StandardScaler())] if scaled else []) + [("clf", estimator)]
+    return Pipeline(steps).fit(_frame(urls), labels)
+
+
+@pytest.mark.parametrize("scaled", [False, True])
+def test_boosting_evidence_is_exact(trained_pipeline, scaled):
+    """HistGradientBoosting log-odds path decomposition reproduces predict_proba."""
+    from sklearn.ensemble import HistGradientBoostingClassifier
+
+    _, _, urls, labels = trained_pipeline
+    pipe = _fit(HistGradientBoostingClassifier(max_iter=40, min_samples_leaf=2, random_state=0),
+                urls, labels, scaled=scaled)
+    X = _frame(urls)
+    for i in range(len(urls)):
+        feats = {name: float(X.iloc[i][name]) for name in FEATURE_NAMES}
+        evidence = compute_model_evidence(pipe, feats)
+        assert evidence["method"] == "tree_path_log_odds"
+        assert evidence["probability_check"]["exact"] is True
+        assert evidence["contributions"], "a fitted booster must attribute something"
+
+
+def test_extra_trees_evidence_is_exact(trained_pipeline):
+    from sklearn.ensemble import ExtraTreesClassifier
+
+    _, _, urls, labels = trained_pipeline
+    pipe = _fit(ExtraTreesClassifier(n_estimators=30, random_state=0), urls, labels)
+    X = _frame(urls)
+    for i in range(0, len(urls), 3):
+        feats = {name: float(X.iloc[i][name]) for name in FEATURE_NAMES}
+        evidence = compute_model_evidence(pipe, feats)
+        assert evidence["method"] == "tree_path"
+        assert evidence["probability_check"]["exact"] is True
+
+
+def test_unsupported_model_falls_back_without_numbers(trained_pipeline):
+    from sklearn.neighbors import KNeighborsClassifier
+
+    _, _, urls, labels = trained_pipeline
+    pipe = _fit(KNeighborsClassifier(n_neighbors=3), urls, labels, scaled=True)
+    feats = {name: float(v) for name, v in _frame(urls[:1]).iloc[0].items()}
+    evidence = compute_model_evidence(pipe, feats)
+    assert evidence["method"] == "rule_based_fallback"
+    assert evidence["contributions"] == {} and evidence["probability_check"] is None
+
+
 def test_missing_artifacts_raise_clear_error(tmp_path):
     empty = tmp_path / "empty"
     empty.mkdir()
@@ -99,6 +148,7 @@ def test_schema_mismatch_rejected(trained_pipeline):
     artifacts, *_ = trained_pipeline
     import json
 
+    write_metadata(artifacts)  # self-contained: do not rely on another test's files
     schema_path = artifacts / "feature_schema.json"
     original = json.loads(schema_path.read_text())
     tampered = dict(original)

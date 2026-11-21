@@ -18,7 +18,7 @@ export interface ModelContribution {
 }
 
 export interface ModelEvidence {
-  method: "tree_path" | "coefficient_log_odds" | "rule_based_fallback";
+  method: "tree_path" | "tree_path_log_odds" | "coefficient_log_odds" | "rule_based_fallback";
   method_description: string;
   bias: number | null;
   probability_check: {

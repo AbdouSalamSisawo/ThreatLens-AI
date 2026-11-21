@@ -14,7 +14,9 @@ Separates explanation into four layers (per the project design):
          P(leaf) = P(root) + sum over path of (P(child) - P(node)), and each
          delta is attributed to the split feature. Averaging over trees
          reproduces the forest's predict_proba EXACTLY.
-     If neither method applies, the service says so and offers rule-based
+       * Gradient boosting (HistGradientBoosting): the same path decomposition
+         in log-odds space, summed over trees; sigmoid(bias + sum) is exact.
+     If no method applies, the service says so and offers rule-based
      contextual guidance, clearly labelled as such (never presented as
      model-derived contributions).
   3. Risk interpretation - careful plain-language meaning of the signals.
@@ -34,7 +36,7 @@ import numpy as np
 
 from app.services.feature_extractor import FEATURE_NAMES
 
-Method = str  # "coefficient_log_odds" | "tree_path" | "rule_based_fallback"
+Method = str  # "coefficient_log_odds" | "tree_path" | "tree_path_log_odds" | "rule_based_fallback"
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +124,65 @@ def contributions_for_forest(
     return bias / n_trees, {k: v / n_trees for k, v in contrib.items()}
 
 
+def contributions_for_boosting(
+    pipeline: Any, x: np.ndarray
+) -> tuple[float, dict[str, float]] | None:
+    """
+    Exact log-odds decomposition for a binary HistGradientBoostingClassifier.
+
+    The raw score is baseline + sum over trees of the leaf value reached.
+    Within each tree the leaf value telescopes along the decision path:
+    value(leaf) = value(root) + sum of (value(child) - value(node)), and each
+    delta is attributed to the split feature. Internal node values are the
+    sample-weighted means of their children, so the attribution is meaningful
+    as well as exact. sigmoid(bias + sum(contributions)) == predict_proba.
+
+    Uses scikit-learn's fitted predictor arrays (version pinned in
+    requirements); the caller verifies exactness on every request.
+    """
+    x_model = np.asarray(x, dtype=float)
+    model = pipeline
+    if hasattr(pipeline, "named_steps"):
+        steps = list(pipeline.named_steps.items())
+        if not steps:
+            return None
+        model = steps[-1][1]
+        for _name, step in steps[:-1]:
+            if hasattr(step, "transform"):
+                x_model = np.asarray(
+                    step.transform(x_model.reshape(1, -1)), dtype=float
+                ).ravel()
+    predictors = getattr(model, "_predictors", None)
+    baseline = getattr(model, "_baseline_prediction", None)
+    if predictors is None or baseline is None or not hasattr(model, "classes_"):
+        return None
+    if list(model.classes_) != [0, 1]:
+        return None
+    is_categorical = getattr(model, "is_categorical_", None)
+    if is_categorical is not None and np.any(is_categorical):
+        return None
+
+    bias = float(np.ravel(baseline)[0])
+    contrib: dict[str, float] = defaultdict(float)
+    for per_iteration in predictors:
+        nodes = per_iteration[0].nodes  # binary task: one tree per iteration
+        node = 0
+        bias += float(nodes["value"][0])
+        while nodes["is_leaf"][node] == 0:
+            feat_idx = int(nodes["feature_idx"][node])
+            value = x_model[feat_idx]
+            if np.isnan(value):
+                go_left = bool(nodes["missing_go_to_left"][node])
+            else:
+                go_left = value <= nodes["num_threshold"][node]
+            child = int(nodes["left"][node] if go_left else nodes["right"][node])
+            contrib[FEATURE_NAMES[feat_idx]] += float(
+                nodes["value"][child] - nodes["value"][node]
+            )
+            node = child
+    return bias, dict(contrib)
+
+
 def compute_model_evidence(pipeline: Any, features: dict[str, float]) -> dict:
     """
     Returns {method, method_description, bias, contributions[], exact_sum,
@@ -173,6 +234,31 @@ def compute_model_evidence(pipeline: Any, features: dict[str, float]) -> dict:
             },
             "contributions": per_feature,
         }
+
+    boosting = contributions_for_boosting(pipeline, x)
+    if boosting:
+        bias, per_feature = boosting
+        proba = float(pipeline.predict_proba(x.reshape(1, -1))[0][1])
+        total = _sigmoid(bias + sum(per_feature.values()))
+        # The decomposition reads fitted predictor arrays, so it is shown only
+        # when it reproduces predict_proba; otherwise fall through honestly.
+        if abs(total - proba) < 1e-6:
+            return {
+                "method": "tree_path_log_odds",
+                "method_description": (
+                    "Exact decision-path decomposition of the gradient-boosted "
+                    "trees: each tree's change in log-odds along the path taken "
+                    "by this URL is attributed to the feature that caused the "
+                    "split, summed over all trees; bias = baseline log-odds."
+                ),
+                "bias": round(bias, 6),
+                "probability_check": {
+                    "decomposition_sum": round(total, 6),
+                    "predict_proba": round(proba, 6),
+                    "exact": True,
+                },
+                "contributions": per_feature,
+            }
 
     return {
         "method": "rule_based_fallback",
