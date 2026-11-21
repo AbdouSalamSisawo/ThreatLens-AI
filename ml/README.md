@@ -23,7 +23,7 @@ ml/
 | 2 | Data acquisition from the original sources + SHA-256 verification | `data/raw/`, provenance table |
 | 3 | Cleaning: label normalisation, invalid URLs, label conflicts, de-duplication | `data/processed/`, cleaning-flow table |
 | 4 | Exploratory data analysis | class balance, URL structure, TLDs, domain concentration |
-| 5 | Feature extraction with the backend's shared extractor + univariate analysis | effect sizes, mutual information, correlation |
+| 5 | Feature extraction (57 features on canonical URLs) with the backend's shared extractor + univariate analysis | effect sizes, mutual information, correlation |
 | 6 | Experimental protocol: domain-disjoint test split, grouped cross-validation | split audit (zero domain overlap) |
 | 7 | Baselines and model comparison | 8 learners + 2 baselines under grouped CV |
 | 8 | Hyperparameter tuning | tuned configurations |
@@ -31,13 +31,14 @@ ml/
 | 10 | Held-out test evaluation with bootstrap confidence intervals | final metrics, ROC/PR curves |
 | 11 | Threshold, risk-band and calibration analysis | reliability diagram, band validation |
 | 12 | Leakage study: random vs domain-disjoint splits | inflation estimate |
-| 13 | Out-of-source generalisation (OpenPhish, Majestic) | recall / false-positive probes |
-| 14 | Interpretability: permutation importance, partial dependence, exact local explanations | feature-importance figures |
-| 15 | Ablation and learning curve | feature-group contributions |
-| 16 | Error analysis | error rates by URL segment |
-| 17 | Computational cost | training time, latency, model size |
-| 18 | Deployment into `backend/artifacts/` + automated validation | the four artefact files |
-| 19 | Findings, limitations, threats to validity | — |
+| 13 | Robustness to meaning-preserving edits (`www.`, host case, trailing slash) | flip rates, accuracy-vs-robustness figure |
+| 14 | Out-of-source generalisation (OpenPhish, Majestic) | recall / false-positive probes |
+| 15 | Interpretability: permutation importance, partial dependence, exact local explanations | feature-importance figures |
+| 16 | Ablation and learning curve | feature-group contributions |
+| 17 | Error analysis | error rates by URL segment |
+| 18 | Computational cost | training time, latency, model size |
+| 19 | Deployment into `backend/artifacts/` + automated validation | the four artefact files |
+| 20 | Findings, limitations, threats to validity | — |
 
 ## Running it
 
@@ -61,5 +62,6 @@ Open the notebook in Colab and run all cells. The first code cell detects Colab,
 - **Domain-disjoint evaluation.** No registrable domain appears in both training and test data. Random splits leak domains and inflate scores; §12 measures by how much.
 - **The test set is used once.** All model selection happens with cross-validation on the development set.
 - **Selection is pre-registered.** The rule for choosing the deployed model is stated before the results are seen (§9).
-- **Explainability is a requirement.** The deployed model must support the backend's exact per-URL explanations (tree-path or coefficient decomposition).
+- **Explainability is a requirement.** The deployed model must support the backend's exact per-URL explanations (coefficient, tree-path, or log-odds tree-path decomposition for gradient boosting).
+- **Robust to free edits.** Features are computed on a canonical URL, so adding `www.` or changing the host's case cannot change a verdict (§13).
 - **Safe display.** Any phishing URL shown in the notebook is defanged (`hxxp://example[.]com`).
