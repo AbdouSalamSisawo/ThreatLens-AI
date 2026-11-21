@@ -50,7 +50,7 @@ pip install -r ml/requirements.txt
 jupyter lab ml/notebooks/threatlens_phishing_url_detection.ipynb
 ```
 
-Run all cells. A full run takes about 10–20 minutes on an 8-core laptop. The notebook downloads any missing data on first run, so it needs internet access then.
+Run all cells. A full run takes about 40–50 minutes on an 8-core laptop, most of it hyperparameter search. The notebook downloads any missing data on first run, so it needs internet access then.
 
 ### Google Colab
 
