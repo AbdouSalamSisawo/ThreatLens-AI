@@ -42,7 +42,7 @@ FastAPI
    ├─ token verification (JWKS signature / Auth /user fallback)
    ├─ server-side URL validation
    ├─ URL parser ─ no network I/O anywhere in this path
-   ├─ shared feature extractor (33 lexical features, versioned schema)
+   ├─ shared feature extractor (57 lexical features on a canonical URL, versioned schema)
    ├─ trained scikit-learn model (joblib artefact)
    ├─ explanation service (exact tree-path / coefficient decomposition)
    └─ history store: disabled | memory | sqlite | supabase (RLS-enforced)
@@ -56,9 +56,9 @@ The classifier is built in a reproducible research notebook ([ml/](ml/README.md)
 
 | PR-AUC | ROC-AUC | Accuracy | Precision | Recall | Explanations |
 |---|---|---|---|---|---|
-| 0.928 (95% CI 0.901–0.949) | 0.931 | 0.857 | 0.894 | 0.771 | exact for every URL |
+| 0.945 (95% CI 0.924–0.962) | 0.950 | 0.887 | 0.882 | 0.861 | exact for every URL |
 
-The selected model is an Extra Trees ensemble. It flags 79% of fresh OpenPhish URLs and about 3% of the 1,000 most-linked legitimate domains. The study also shows that random train/test splits would have overstated PR-AUC by 0.04. Details: [docs/MODEL_CARD.md](docs/MODEL_CARD.md).
+The selected model is a tuned gradient-boosted tree ensemble. It flags 91% of fresh OpenPhish URLs and about 1% of the 1,000 most-linked legitimate domains, and edits that don't change a link's destination (such as adding `www.`) never change its verdict. The study also shows that random train/test splits would have overstated PR-AUC by about 0.03. Details: [docs/MODEL_CARD.md](docs/MODEL_CARD.md).
 
 **Stack:** React 19, TypeScript, Vite, Tailwind CSS 4, Recharts, Framer Motion · Python 3.12, FastAPI, Pydantic, PyJWT · scikit-learn, pandas, NumPy · Supabase Auth + Postgres (RLS) · pytest.
 
