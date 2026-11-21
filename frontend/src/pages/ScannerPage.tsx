@@ -109,7 +109,7 @@ function IntroContent() {
         <ol className="mt-3 space-y-2 text-xs leading-relaxed text-text-dim">
           <li>1. The URL is re-validated on the server.</li>
           <li>2. It is parsed locally — no request is made to the destination.</li>
-          <li>3. 33 lexical features are extracted.</li>
+          <li>3. 57 lexical features are extracted.</li>
           <li>4. The trained model produces a probability.</li>
           <li>5. The explanation service derives exact evidence.</li>
           <li>6. Recommendations follow the evidence.</li>

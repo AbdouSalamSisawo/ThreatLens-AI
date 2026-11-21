@@ -89,7 +89,7 @@ function HeroVisual() {
 const PIPELINE = [
   { step: 1, title: "Submit a URL", desc: "You paste a link into the scanner." },
   { step: 2, title: "Validate & parse", desc: "The backend re-validates the input and parses its structure. The site is never visited." },
-  { step: 3, title: "Extract features", desc: "33 lexical characteristics — lengths, tokens, encoding, hostname structure — are computed locally." },
+  { step: 3, title: "Extract features", desc: "57 lexical characteristics — lengths, tokens, encoding, hostname structure — are computed locally." },
   { step: 4, title: "Run the model", desc: "A trained tree-ensemble classifier scores the feature vector and outputs an estimated probability." },
   { step: 5, title: "Explain the result", desc: "Exact per-feature contributions and observed signals show why the decision was made." },
   { step: 6, title: "Guide the response", desc: "Proportionate safety recommendations follow the evidence — never “open the link to check”." },

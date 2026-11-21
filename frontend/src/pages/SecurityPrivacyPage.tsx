@@ -42,7 +42,7 @@ export function SecurityPrivacyPage() {
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-text-dim">
             Only the URL <strong className="text-text">string itself</strong>.
-            The backend parses the text you submit and computes 33 lexical
+            The backend parses the text you submit and computes 57 lexical
             features from it — lengths, character counts, hostname structure,
             encoding, tokens. A trained tree-ensemble model then classifies those
             features. No page content, no screenshots, no redirects are

@@ -55,7 +55,7 @@ export function AboutPage() {
         <section className="panel p-5 sm:p-6">
           <h2 className="text-base font-semibold text-text">Technical approach &amp; the role of explainable ML</h2>
           <p className="mt-3 text-sm leading-relaxed text-text-dim">
-            The system pairs a supervised classifier (a tree ensemble over 33
+            The system pairs a supervised classifier (a tree ensemble over 57
             lexical URL features) with an explanation layer that decomposes
             every prediction into exact per-feature contributions and
             human-readable observations. Explainability is not a bolt-on: it

@@ -28,7 +28,7 @@ const STEPS = [
   {
     icon: FileSearch,
     title: "3 · Lexical feature extraction",
-    body: "One shared, versioned module (the exact same code used in training) computes 33 features: lengths, dot/hyphen/digit counts, digit ratios, percent-encoding counts, query parameters, '@' and credential patterns, IP-address hostnames, non-standard ports, shortener and suspicious-TLD indicators, punycode, brand-impersonation structure, hostname entropy and more. Each is a signal, never a verdict.",
+    body: "One shared, versioned module (the exact same code used in training) computes 57 features: lengths, dot/hyphen/digit counts, digit ratios, percent-encoding counts, query parameters, '@' and credential patterns, IP-address hostnames, non-standard ports, shortener and suspicious-TLD indicators, punycode, brand-impersonation structure, domain endings hidden in subdomains or paths, random-looking domain names, word statistics, hostname entropy and more. Before measuring, the URL is put in a canonical form (a leading \"www.\" removed, the host lower-cased), so edits that do not change where a link goes cannot change the verdict. Each feature is a signal, never a verdict.",
   },
   {
     icon: BrainCircuit,
@@ -155,7 +155,7 @@ export function HowItWorksPage() {
               <Link to="/model-performance" className="text-info hover:underline">Model Performance</Link> page.
             </li>
             <li>
-              <strong className="text-text">Features.</strong> The same 33-feature
+              <strong className="text-text">Features.</strong> The same 57-feature
               extractor that runs live was applied to every URL — one code path
               for training and inference, so the model never sees features the
               scanner cannot compute.

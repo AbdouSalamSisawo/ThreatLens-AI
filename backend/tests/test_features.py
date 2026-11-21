@@ -10,8 +10,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.services.feature_extractor import (  # noqa: E402
+    FEATURE_DESCRIPTIONS,
     FEATURE_NAMES,
     URLValidationError,
+    canonical_feature_url,
     extract_features,
     normalise_url_for_dedup,
     parse_url,
@@ -163,6 +165,78 @@ class TestFeatures:
 
         f = extract_features("http://198.51.100.9/a/login?x=1&y=%20")
         assert all(math.isfinite(v) for v in f.values())
+
+
+class TestCanonicalisation:
+    """Schema 2.0.0: edits that do not change the destination must not change features."""
+
+    @pytest.mark.parametrize(
+        "raw, expected",
+        [
+            ("https://WWW.Example.com", "https://example.com/"),
+            ("www.example.com/a?b=1", "example.com/a?b=1"),
+            ("http://user:pw@www.example.com:8080?q#f", "http://user:pw@example.com:8080/?q#f"),
+            ("https://www.com/", "https://www.com/"),  # never strip down to a bare TLD
+            ("http://[2001:db8::1]/x", "http://[2001:db8::1]/x"),
+            ("HTTP://Example.COM/Path/A", "http://example.com/Path/A"),  # path case kept
+        ],
+    )
+    def test_canonical_form(self, raw, expected):
+        assert canonical_feature_url(raw) == expected
+
+    @pytest.mark.parametrize(
+        "a, b",
+        [
+            ("http://www.paypal-secure.com.example.net/login.php", "http://paypal-secure.com.example.net/login.php"),
+            ("https://Example.org", "https://example.org/"),
+            ("example.org", "www.example.org/"),
+        ],
+    )
+    def test_meaning_preserving_edits_do_not_change_features(self, a, b):
+        assert extract_features(a) == extract_features(b)
+
+    def test_raw_mode_is_available_for_research(self):
+        raw = extract_features("http://www.example.com", canonicalize=False)
+        canonical = extract_features("http://www.example.com")
+        assert raw["nb_dots_hostname"] == 2 and canonical["nb_dots_hostname"] == 1
+
+
+class TestSchema2Features:
+    def test_every_feature_documented(self):
+        assert set(FEATURE_NAMES) == set(FEATURE_DESCRIPTIONS)
+        assert len(FEATURE_NAMES) == 57
+
+    def test_deception_patterns(self):
+        f = extract_features("http://login.paypal.com.secure-check.xyz/www.bank.com/verify/index.php?u=http://a.b")
+        assert f["tld_token_in_subdomain"] == 1
+        assert f["tld_token_in_path"] == 1
+        assert f["http_in_path"] == 1
+        assert f["has_page_extension"] == 1
+        assert f["domain_label_has_hyphen"] == 1
+        assert f["is_root_path"] == 0
+
+    def test_home_page_and_domain_label(self):
+        f = extract_features("https://example.org")
+        assert f["is_root_path"] == 1
+        assert f["has_common_tld"] == 1 and f["tld_length"] == 3
+        assert f["domain_label_length"] == 7  # "example"
+        assert f["domain_label_has_digit"] == 0
+
+    def test_random_looking_domain(self):
+        f = extract_features("http://xkqzrtw9.top/")
+        assert f["domain_label_has_digit"] == 1
+        assert f["domain_label_max_consonant_run"] == 7
+        assert f["domain_label_vowel_ratio"] == 0.0
+
+    def test_ip_host_has_no_domain_label(self):
+        f = extract_features("http://198.51.100.7/a")
+        assert f["domain_label_length"] == 0 and f["tld_length"] == 0 and f["has_common_tld"] == 0
+
+    def test_word_statistics(self):
+        f = extract_features("https://example.com/account-recovery/step_two?id=42")
+        assert f["nb_path_words"] == 6  # account, recovery, step, two, id, 42
+        assert f["longest_path_word"] == len("recovery")
+        assert f["first_dir_length"] == len("account-recovery")
 
 
 class TestDedup:
