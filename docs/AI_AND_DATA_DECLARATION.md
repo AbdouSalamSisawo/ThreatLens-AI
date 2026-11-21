@@ -16,7 +16,7 @@ This document discloses, honestly and completely, every external data source, AI
 
 | Component | Provider / origin | Identifier |
 |---|---|---|
-| URL classifier (the only ML model in the product) | Trained locally with scikit-learn from the project's own research notebook (`ml/notebooks/threatlens_phishing_url_detection.ipynb`) | `threatlens-phishing-url-classifier` v2.0.0 |
+| URL classifier (the only ML model in the product) | Trained locally with scikit-learn from the project's own research notebook (`ml/notebooks/threatlens_phishing_url_detection.ipynb`) | `threatlens-phishing-url-classifier` v3.0.0 |
 | External hosted AI APIs | **None used.** No OpenAI/Hugging Face/other inference APIs are called | — |
 
 ## 3. Training dataset sources
@@ -55,12 +55,12 @@ This document discloses, honestly and completely, every external data source, AI
 
 ## 6. Where machine learning is used
 
-- **One place only:** `POST /api/scan` → the trained Extra Trees model assigns an estimated probability to the phishing class for the submitted URL's feature vector.
+- **One place only:** `POST /api/scan` → the trained gradient-boosted tree model assigns an estimated probability to the phishing class for the submitted URL's feature vector.
 
 ## 7. Where deterministic rules are used (no ML)
 
 - Input validation and scheme allow-listing.
-- URL parsing and all 33 lexical feature computations.
+- URL parsing, canonicalisation and all 57 lexical feature computations.
 - **Observed characteristics** in the explanation layer (e.g. "hostname is an IP address") — derived directly from feature values with documented thresholds.
 - Reference lists (shorteners, high-abuse TLDs, security/urgency vocabulary, brand tokens) — transparent, documented, used as *signals*; they never decide a verdict alone.
 - Classification-band mapping (0.50/0.80 thresholds + 0.35–0.65 uncertainty flag) and the risk-score formula (probability × 100).
@@ -91,7 +91,7 @@ This document discloses, honestly and completely, every external data source, AI
 - URL-only analysis; no page content, behaviour or reputation signals.
 - Uncalibrated probabilities; bands are decision aids, not measured risk.
 - Single-user prototype: no accounts, in-process rate limiting, local history only.
-- Model version 2.0.0 is a static snapshot; retraining required to track evolving phishing.
+- Model version 3.0.0 is a static snapshot; retraining required to track evolving phishing.
 
 ## 12. Human oversight
 

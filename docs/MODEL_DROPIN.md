@@ -21,7 +21,7 @@ Exactly **four files** in `backend/artifacts/`:
 | File | Role |
 |---|---|
 | `phishing_model.joblib` | The trained scikit-learn estimator (serialised with joblib) |
-| `feature_schema.json` | Feature schema version + ordered feature-name list (33 lexical features) |
+| `feature_schema.json` | Feature schema version + ordered feature-name list (57 lexical features, schema 2.0.0) |
 | `model_metadata.json` | Model ID, version, selection record, dataset provenance |
 | `metrics.json` | Held-out test metrics, domain-grouped evaluation, out-of-source checks |
 
