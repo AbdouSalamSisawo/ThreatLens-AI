@@ -7,9 +7,10 @@ One command that answers: "can this backend serve this model right now?"
     python scripts/validate_model.py                   # validate ./artifacts
     python scripts/validate_model.py --artifacts-dir /path/to/artifacts
 
-Run it after training (the ML notebook runs it automatically when it deploys),
-after dropping new artefacts into backend/artifacts/, or before any deploy. Exit code 0 = all checks passed; 1 = at least one
-check failed, with an actionable message.
+Run it after training (the Phishing-url-detection-ML notebook runs it
+automatically when THREATLENS_BACKEND points at this backend), after dropping
+new artefacts into backend/artifacts/, or before any deploy. Exit code 0 = all
+checks passed; 1 = at least one check failed, with an actionable message.
 
 The central check runs the SAME loader the API uses at startup
 (app/ml/model_loader.py), so a pass here means the running API will serve
@@ -84,8 +85,9 @@ def main() -> int:
     if missing:
         bad("Missing artefact file(s): " + ", ".join(missing))
         print(
-            "\n  Fix: run the ML notebook (ml/notebooks/); its deploy section\n"
-            "  exports the four artefact files into backend/artifacts/.\n"
+            "\n  Fix: run the Phishing-url-detection-ML notebook with THREATLENS_BACKEND\n"
+            "  set to this backend/ folder; it copies the four artefact files into\n"
+            "  backend/artifacts/ and validates them.\n"
             "  Full procedure: docs/MODEL_DROPIN.md\n"
         )
         return 1

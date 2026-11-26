@@ -3,7 +3,8 @@ ThreatLens AI - Shared URL Feature Extractor
 =============================================
 
 This module is the SINGLE source of truth for URL feature extraction.
-Both the training notebook (ml/notebooks/) and the live inference
+Both the training notebook (Phishing-url-detection-ML project, which keeps
+a verbatim copy of this file in threatlens_features/) and the live inference
 endpoint (backend/app/services/inference_service.py) MUST use this module
 so that the feature schema is identical between training and serving.
 

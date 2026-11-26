@@ -1,8 +1,11 @@
 # Model artefacts
 
-This directory holds the trained model artefacts exported by the research
-notebook (`ml/notebooks/threatlens_phishing_url_detection.ipynb`, deployment
-section). They are git-ignored, so only this README is committed.
+This directory holds the trained model artefacts exported by the separate
+**Phishing-url-detection-ML** research project
+(`notebooks/threatlens_phishing_url_detection.ipynb`, section 19). Run that
+notebook with the environment variable `THREATLENS_BACKEND` pointing at this
+`backend/` folder and it copies the artefacts here and validates them. The
+artefacts are git-ignored, so only this README is committed.
 
 Expected files:
 

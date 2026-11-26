@@ -2,7 +2,7 @@
 Trusted model artefact loading.
 
 Only artefacts produced by this project's own training pipeline
-(the ML notebook in ml/notebooks/) are loaded. Downloaded serialised models
+(the Phishing-url-detection-ML research notebook) are loaded. Downloaded serialised models
 are treated as untrusted and never auto-loaded. If the artefact is missing
 or incompatible the service reports an explicit error state - it NEVER
 falls back to a substitute model, random output, or mock predictions.
