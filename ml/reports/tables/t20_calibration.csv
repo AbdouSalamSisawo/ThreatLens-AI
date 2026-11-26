@@ -1,3 +1,0 @@
-model,brier,ece,pr_auc
-"hist_gradient_boosting (deployed, uncalibrated)",0.08393132241877065,0.024969112448636397,0.9450931307831901
-hist_gradient_boosting + isotonic calibration,0.0834040307467048,0.02789467255444255,0.9454587643358758

@@ -1,5 +1,0 @@
-model,configurations_tried,default_pr_auc,tuned_pr_auc,gain,search_seconds,best_params
-logistic_regression,30,0.9080610267274547,0.9084288324640653,0.00036780573661054916,45.01167080000596,"{""C"": 3.584985580340472, ""class_weight"": null, ""penalty"": ""l1""}"
-random_forest,40,0.9284113365705216,0.9316938067031794,0.003282470132657811,477.9661268999989,"{""n_estimators"": 200, ""min_samples_leaf"": 2, ""max_features"": ""log2"", ""max_depth"": null, ""class_weight"": null}"
-extra_trees,40,0.906222628536136,0.9273521611316866,0.021129532595550615,271.1718827000004,"{""n_estimators"": 500, ""min_samples_leaf"": 4, ""max_features"": 0.5, ""max_depth"": 20, ""class_weight"": ""balanced_subsample""}"
-hist_gradient_boosting,60,0.9380272897040062,0.9401148713997098,0.0020875816957036664,630.277548099999,"{""l2_regularization"": 0.8431013932082461, ""learning_rate"": 0.034345084207755734, ""max_depth"": 10, ""max_features"": 1.0, ""max_iter"": 200, ""max_leaf_nodes"": 63, ""min_samples_leaf"": 5}"

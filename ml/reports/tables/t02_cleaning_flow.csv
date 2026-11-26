@@ -1,7 +1,0 @@
-step,records,removed
-Loaded from source (official train + test),11430,0
-Valid label and non-empty URL,11430,0
-Length <= 2048 characters,11430,0
-Parsable by the production URL parser,11430,0
-No label conflict,11430,0
-Unique canonical URL,11203,227
