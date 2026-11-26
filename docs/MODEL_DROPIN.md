@@ -71,23 +71,29 @@ output, no mock.
 
 ## 4. Training your own model from scratch
 
-Training is done in the research notebook, not in standalone scripts:
+Training is done in the research notebook of the separate
+**Phishing-url-detection-ML** project, not in this repository:
 
 ```bash
-pip install -r ml/requirements.txt
-jupyter lab ml/notebooks/threatlens_phishing_url_detection.ipynb   # Run All
+# in the Phishing-url-detection-ML project
+pip install -r requirements.txt
+THREATLENS_BACKEND=/path/to/ThreatLens-AI/backend   jupyter lab notebooks/threatlens_phishing_url_detection.ipynb   # Run All
 ```
 
-The notebook downloads the data from its original sources (checksum-verified,
-see `ml/data/README.md`), cleans it, compares and tunes candidate models with
-domain-grouped cross-validation, evaluates the selected model once on a
-domain-disjoint test set, and, in its deployment section, writes the four
-artefacts into `backend/artifacts/` and runs `scripts/validate_model.py`
-automatically. It can also be run on Google Colab (see `ml/README.md`).
+The notebook downloads the data from its original sources (checksum-verified),
+cleans it, compares and tunes candidate models with domain-grouped
+cross-validation and evaluates the selected model once on a domain-disjoint
+test set. Its export section always writes the four artefacts to its own
+`artifacts/` folder; when `THREATLENS_BACKEND` is set it also copies them into
+`backend/artifacts/` and runs `scripts/validate_model.py` automatically. It can
+also run on Google Colab.
 
-The notebook imports the **same shared feature extractor** as the API
-(`app/services/feature_extractor.py`), so train/serve skew is impossible by
-construction; the schema-version check in the loader is the second guard.
+The project keeps a **verbatim copy** of this backend's feature extractor and
+explanation service (`threatlens_features/`). With `THREATLENS_BACKEND` set,
+the notebook refuses to train if the copy differs from the backend, so
+train/serve skew cannot creep in; the schema-version check in the loader is the
+second guard. After changing features here, bump `FEATURE_SCHEMA_VERSION` and
+copy both files into the research project again.
 
 ## 5. Rollback
 
@@ -103,7 +109,7 @@ Restoring is the reverse: copy the backup's four files back into
 ## 6. Security rules for artefacts
 
 - Only load artefacts **produced by this project's training pipeline**
-  (the research notebook in `ml/notebooks/`). `app/ml/model_loader.py` documents this
+  (the Phishing-url-detection-ML research notebook). `app/ml/model_loader.py` documents this
   policy: downloaded serialised models are treated as untrusted and never
   auto-loaded.
 - A model file from an unknown source can execute arbitrary code when

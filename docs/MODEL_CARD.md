@@ -5,13 +5,13 @@
 | **Model ID** | `threatlens-phishing-url-classifier` |
 | **Version** | 3.0.0 (UTC training timestamp in `backend/artifacts/model_metadata.json`) |
 | **Model** | Histogram gradient boosting (`HistGradientBoostingClassifier`): 200 trees, learning rate 0.034, up to 63 leaves and depth 10 per tree, `min_samples_leaf=5`, L2 regularisation 0.84 |
-| **Framework** | scikit-learn 1.6.1 (pinned in `backend/` and `ml/` requirements) |
+| **Framework** | scikit-learn 1.6.1 (pinned in the backend and the research project's requirements) |
 | **Feature schema** | 2.0.0 — 57 lexical features computed on a canonical form of the URL |
 | **Size / speed** | 0.6 MB; about 15 ms to score and about 25 ms to explain a URL on one CPU core |
-| **Produced by** | [`ml/notebooks/threatlens_phishing_url_detection.ipynb`](../ml/notebooks/threatlens_phishing_url_detection.ipynb) |
+| **Produced by** | `notebooks/threatlens_phishing_url_detection.ipynb` in the separate Phishing-url-detection-ML project |
 | **Artefacts** | `backend/artifacts/phishing_model.joblib`, `model_metadata.json`, `metrics.json`, `feature_schema.json` |
 
-All figures below come from the notebook. Its tables are in `ml/reports/tables/` and its figures in `ml/reports/figures/`.
+All figures below come from that notebook. Its tables and figures are in the research project's `reports/` folder.
 
 ## 1. Purpose
 
@@ -25,7 +25,7 @@ Campus awareness demos, security education, and users of the ThreatLens web appl
 
 ## 3. Training data
 
-- Hannousse & Yahiouche phishing-URL corpus ([arXiv:2010.12847](https://arxiv.org/abs/2010.12847), *Engineering Applications of Artificial Intelligence* 104, 2021), redistributed as `pirocheto/phishing-url` on Hugging Face, CC-BY-4.0. The snapshot was retrieved on 2026-10-29 and is checksum-verified (`ml/data/README.md`).
+- Hannousse & Yahiouche phishing-URL corpus ([arXiv:2010.12847](https://arxiv.org/abs/2010.12847), *Engineering Applications of Artificial Intelligence* 104, 2021), redistributed as `pirocheto/phishing-url` on Hugging Face, CC-BY-4.0. The snapshot was retrieved on 2026-10-29 and is checksum-verified (`data/README.md` in the research project).
 - 11,430 records loaded; 11,203 kept after removing 227 canonical duplicates. No records had invalid labels, unparsable URLs or label conflicts.
 - 5,488 phishing / 5,715 legitimate, from 2,599 and 3,903 registrable domains respectively.
 - Only the raw `url` and `status` fields are used. The dataset's 87 pre-computed features are discarded, because the API can only compute features from the URL.
@@ -106,4 +106,4 @@ The backend shows the decomposition only when it reproduces the model's probabil
 
 - The feature schema version (2.0.0) is stored in the artefacts and checked against the code. The API refuses to serve on a mismatch, so models built on schema 1.x are refused.
 - Only artefacts produced by this repository's notebook are loaded. Downloaded serialised models are treated as untrusted.
-- Retraining: run the notebook top to bottom. Its deployment section writes all four artefacts and runs `backend/scripts/validate_model.py`.
+- Retraining: run the research project's notebook top to bottom with `THREATLENS_BACKEND` set to this repository's `backend/` folder. It checks that its copy of the feature extractor matches the backend, writes all four artefacts into `backend/artifacts/` and runs `backend/scripts/validate_model.py`.

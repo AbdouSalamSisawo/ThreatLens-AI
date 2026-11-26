@@ -74,7 +74,7 @@ app/
 
 The SQL schema and RLS policies live in `supabase/migrations/0001_init.sql` (idempotent, applied via the Supabase SQL Editor — see README §8.6).
 
-**Training lives outside the app** (`ml/notebooks/`) — the API never trains at startup; it loads artefacts exported by the research notebook and refuses to serve if they are missing or schema-mismatched.
+**Training lives outside the app**, in the separate Phishing-url-detection-ML research project. The API never trains at startup; it loads artefacts exported by that project's notebook and refuses to serve if they are missing or schema-mismatched.
 
 ## 3. The scan flow, step by step
 
